@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html><head><base target="_top"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--verde:#D4A72C;--fondo:#18181B;--borde:#52525B}*{box-sizing:border-box}body{margin:0;font:14px Arial,sans-serif;background:var(--fondo);color:#F4F4F5}header{background:var(--verde);color:white;padding:22px}header h1{margin:0 0 7px;font-size:23px}header p{margin:0;opacity:.9}main{max-width:1150px;margin:auto;padding:18px}.metricas{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}.tarjeta,.panel{background:white;border:1px solid var(--borde);border-radius:12px;padding:16px;margin-bottom:15px}.metrica{font-size:12px;color:#A1A1AA}.numero{font-size:22px;font-weight:bold;margin-top:9px;overflow-wrap:anywhere}nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}button{background:var(--verde);color:white;border:0;border-radius:8px;padding:11px 14px;cursor:pointer;font-weight:600}button.secundario{background:#3F3F46;color:#F4D98B}button:disabled{opacity:.6;cursor:wait}.formulario{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.campo{min-width:0}.ancho{grid-column:1/-1}label{display:block;font-weight:600;margin-bottom:5px}input,select,textarea{width:100%;padding:10px;border:1px solid #52525B;border-radius:7px;background:white;font:inherit}textarea{min-height:65px;resize:vertical}h2{font-size:18px;margin:0 0 15px}.oculto{display:none!important}.tabla{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{padding:10px;border-bottom:1px solid #3F3F46;text-align:left}th{font-size:12px;color:#A1A1AA}.estado{color:#D4A72C;font-weight:bold}#mensaje{margin:12px 0;white-space:pre-wrap}.error{color:#b42318}.exito{color:#D4A72C}.ayuda{color:#A1A1AA;font-size:12px;line-height:1.5}.acciones-recibo{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.recibo-cabecera{display:flex;justify-content:space-between;gap:15px;align-items:center}.recibo-logo{width:48px;height:48px;border-radius:50%;background:#3F3F46;color:#D4A72C;display:grid;place-items:center;font-size:24px;font-weight:bold}.detalle-recibo{max-width:650px}.linea-recibo{display:flex;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #3F3F46}.linea-recibo span:first-child{color:#A1A1AA}.total-recibo{font-size:19px;font-weight:bold;color:#D4A72C}.login-wrap{min-height:75vh;display:grid;place-items:center}.login-card{width:min(100%,420px);background:white;border:1px solid var(--borde);border-radius:16px;padding:28px;box-shadow:0 12px 35px #173f2c12}.login-card h2{font-size:24px}.login-card .campo{margin:14px 0}.login-card button{width:100%}.marca{font-size:35px;color:var(--verde);font-weight:bold;margin-bottom:10px}.checkline{display:flex;gap:8px;align-items:center;font-weight:normal}.checkline input{width:auto}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.topbar button{padding:8px 11px}@media(max-width:600px){main{padding:12px}header{padding:18px 14px}.numero{font-size:19px}.recibo-cabecera{align-items:flex-start}}@media print{body{background:white}body>header{display:none!important}main>*:not(#recibo){display:none!important}#recibo.oculto{display:block!important}#recibo button,.no-imprimir{display:none!important}#recibo{border:0;box-shadow:none;max-width:100%;margin:0;padding:0}.detalle-recibo{max-width:100%}}
+
+/* Notificaciones y microanimaciones */
+button{transition:transform .16s ease,box-shadow .16s ease,filter .16s ease}button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 13px #D4A72C26;filter:brightness(1.04)}button:active:not(:disabled){transform:scale(.98)}
+.panel,.tarjeta,.login-card{animation:entradaSuave .32s ease both}
+@keyframes entradaSuave{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#mensaje{min-height:0;margin:0;white-space:pre-wrap}.error,.exito{font-weight:600}
+#toastZona{position:fixed;top:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:10px;width:min(380px,calc(100vw - 28px));pointer-events:none}
+.toast{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border-radius:12px;background:#fff;color:#F4F4F5;box-shadow:0 12px 34px #10271d26;border:1px solid #52525B;border-left:5px solid #D4A72C;animation:toastEntrada .28s ease both;pointer-events:auto}
+.toast.error{border-left-color:#c0392b;color:#84251d}.toast .toast-icon{font-size:18px;line-height:1.2}.toast .toast-text{flex:1;line-height:1.45}.toast.saliendo{animation:toastSalida .22s ease forwards}
+@keyframes toastEntrada{from{opacity:0;transform:translateX(18px) scale(.98)}to{opacity:1;transform:translateX(0) scale(1)}}@keyframes toastSalida{to{opacity:0;transform:translateX(18px)}}
+#loginMensaje{min-height:20px;margin-top:12px;padding:0;transition:all .2s ease}#loginMensaje.error{color:#b42318;animation:temblor .28s ease}#loginMensaje.exito{color:#D4A72C}
+@keyframes temblor{25%,75%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+button:disabled{position:relative;cursor:wait;filter:saturate(.65)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Sidebar moderno */
+body.app-mode>header{margin-left:260px}
+body.app-mode>main{margin-left:260px;max-width:none;width:calc(100% - 260px);padding:22px 26px}
+.sidebar{position:fixed!important;z-index:1000;inset:0 auto 0 0;width:260px;height:100vh;margin:0!important;padding:18px 14px;background:#fff;border-right:1px solid #e3eae6;box-shadow:5px 0 24px #153c2a0b;display:flex;flex-direction:column;gap:22px;overflow-y:auto}
+.sidebar-brand{display:flex;align-items:center;gap:12px;padding:5px 7px 18px;border-bottom:1px solid #3F3F46;font-size:19px;font-weight:800;color:#F4F4F5}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:#D4A72C;color:#fff;display:grid;place-items:center;font-size:22px}
+.sidebar-toggle{margin-left:auto;background:#eef4f0!important;color:#A1A1AA!important;padding:8px 10px!important;border-radius:9px!important;box-shadow:none!important}
+.sidebar-menu{display:flex;flex-direction:column;gap:6px;flex:1}
+.sidebar-menu button,.sidebar-refresh{width:100%;display:flex;align-items:center;gap:14px;text-align:left;background:transparent;color:#A1A1AA;padding:12px 13px;border-radius:10px;font-weight:600;box-shadow:none}
+.sidebar-menu button:hover,.sidebar-refresh:hover{background:#f0f6f2;color:#D4A72C;transform:none;box-shadow:none}
+.sidebar-menu button.active{background:#3F3F46;color:#D4A72C;box-shadow:inset 3px 0 #D4A72C}
+.nav-icon{width:23px;min-width:23px;text-align:center;font-size:20px;font-weight:700;color:#7a8b82}
+.sidebar-menu button.active .nav-icon{color:#D4A72C}
+.sidebar-bottom{border-top:1px solid #3F3F46;padding-top:13px;display:flex;flex-direction:column;gap:10px}
+.sidebar-refresh{background:#f1f5f2;color:#A1A1AA}
+.sidebar-user{display:flex;align-items:center;gap:12px;padding:12px 10px;color:#A1A1AA;font-weight:600}
+.user-avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#dcece3;color:#D4A72C}
+body.sidebar-collapsed>header{margin-left:82px}
+body.sidebar-collapsed>main{margin-left:82px;width:calc(100% - 82px)}
+body.sidebar-collapsed .sidebar{width:82px;padding:18px 10px}
+body.sidebar-collapsed .sidebar-label{display:none}
+body.sidebar-collapsed .sidebar-brand{justify-content:center;padding-left:0;padding-right:0}
+body.sidebar-collapsed .sidebar-toggle{margin:0}
+body.sidebar-collapsed .sidebar-menu button,body.sidebar-collapsed .sidebar-refresh{justify-content:center;padding:13px 8px}
+body.sidebar-collapsed .sidebar-user{justify-content:center;padding:10px 0}
+body.sidebar-collapsed .sidebar-menu button.active{box-shadow:inset 3px 0 #D4A72C}
+.topbar{margin-bottom:12px}
+@media(max-width:760px){
+ body.app-mode>header{margin-left:0;padding-left:78px}
+ body.app-mode>main{margin-left:0;width:100%;padding:14px}
+ .sidebar{width:72px;padding:14px 8px}
+ .sidebar-label{display:none}
+ .sidebar-brand{justify-content:center;padding:4px 0 14px}
+ .sidebar-toggle{display:none}
+ .sidebar-menu button,.sidebar-refresh{justify-content:center;padding:12px 6px}
+ .sidebar-user{justify-content:center;padding:8px 0}
+ body.sidebar-collapsed .sidebar{width:72px}
+ body.sidebar-collapsed>header{margin-left:0;padding-left:78px}
+ body.sidebar-collapsed>main{margin-left:0;width:100%}
+}
+@media print{.sidebar{display:none!important}body.app-mode>header,body.app-mode>main{margin:0!important;width:100%!important}}
+
+
+/* Navegación responsive: móvil con menú desplegable tipo drawer */
+.mobile-menu-btn{display:none!important}
+.sidebar-backdrop{display:none}
+@media(max-width:760px){
+  body.app-mode>header{margin:0!important;padding:14px 16px 14px 64px!important;width:100%;min-height:76px;position:relative}
+  body.app-mode>header h1{font-size:20px;line-height:1.2;margin:0}
+  body.app-mode>header p{font-size:12px;margin:5px 0 0}
+  body.app-mode>main{margin:0!important;width:100%!important;max-width:100%!important;padding:14px!important}
+  .mobile-menu-btn{display:flex!important;position:absolute;left:14px;top:18px;width:40px;height:40px;align-items:center;justify-content:center;border:0;border-radius:10px;background:#3F3F46;color:#D4A72C;font-size:23px;box-shadow:none;z-index:1002}
+  .sidebar{position:fixed!important;top:0;bottom:0;left:0;right:auto;width:min(82vw,300px)!important;height:100dvh!important;padding:18px 14px!important;transform:translateX(-110%);transition:transform .25s ease;z-index:1101;box-shadow:8px 0 30px #102d201f;display:flex}
+  body.mobile-sidebar-open .sidebar{transform:translateX(0)}
+  .sidebar-label{display:inline!important}
+  .sidebar-brand{justify-content:flex-start!important;padding:5px 7px 18px!important}
+  .sidebar-toggle{display:flex!important;margin-left:auto!important}
+  .sidebar-menu button,.sidebar-refresh{justify-content:flex-start!important;padding:12px 13px!important}
+  .sidebar-user{justify-content:flex-start!important;padding:12px 10px!important}
+  .sidebar-backdrop{display:block;position:fixed;inset:0;background:rgba(15,25,20,.42);opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s ease;z-index:1100}
+  body.mobile-sidebar-open .sidebar-backdrop{opacity:1;visibility:visible}
+  body.mobile-sidebar-open{overflow:hidden}
+  body.sidebar-collapsed .sidebar{width:min(82vw,300px)!important}
+  body.sidebar-collapsed .sidebar-label{display:inline!important}
+  body.sidebar-collapsed .sidebar-menu button,body.sidebar-collapsed .sidebar-refresh{justify-content:flex-start!important}
+}
+@media(min-width:761px){
+  .mobile-menu-btn,.sidebar-backdrop{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .sidebar,.sidebar-backdrop{transition:none!important}
+}
+
+
+/* ===== Ajuste integral tipo app para celulares y tablets ===== */
+html{width:100%;min-height:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{width:100%;min-width:320px;overflow-x:hidden}
+body.app-mode{min-height:100dvh}
+body.app-mode>header{position:relative;z-index:5}
+body.app-mode>main{min-width:0}
+main>*{min-width:0;max-width:100%}
+.panel,.tarjeta,.login-card{min-width:0;overflow-wrap:anywhere}
+.formulario>*{min-width:0}
+input,select,textarea,button{max-width:100%;touch-action:manipulation}
+.tabla{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px}
+.tabla table{width:100%}
+.metricas{align-items:stretch}
+.tarjeta{height:100%}
+button{min-height:42px}
+@media(max-width:760px){
+  html,body{overflow-x:hidden}
+  body.app-mode>header{position:sticky;top:0;z-index:900;min-height:68px;padding:12px 14px 12px 62px!important;box-shadow:0 3px 14px #00000012}
+  body.app-mode>header h1{font-size:clamp(18px,5vw,21px);margin:0;line-height:1.2}
+  body.app-mode>header p{font-size:11px;line-height:1.35;margin-top:4px}
+  body.app-mode>main{padding:12px 11px 28px!important;max-width:100%!important}
+  .mobile-menu-btn{position:fixed!important;top:13px!important;left:12px!important;width:40px!important;height:40px!important;z-index:1200!important;border-radius:12px!important;box-shadow:0 2px 8px #092b1c20!important}
+  .metricas{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+  .tarjeta,.panel{padding:13px!important;border-radius:14px!important;margin-bottom:11px!important}
+  .metrica{font-size:11px;line-height:1.3}
+  .numero{font-size:clamp(17px,5vw,21px)!important;margin-top:7px;line-height:1.2}
+  h2{font-size:17px!important;line-height:1.3;margin-bottom:12px!important}
+  h3{font-size:15px}
+  .formulario{grid-template-columns:minmax(0,1fr)!important;gap:11px!important}
+  .formulario .ancho{grid-column:1}
+  .campo{width:100%;min-width:0}
+  label{font-size:13px;margin-bottom:6px}
+  input,select,textarea{width:100%;min-height:46px;padding:12px!important;font-size:16px!important;border-radius:10px!important}
+  textarea{min-height:88px}
+  button{min-height:44px;padding:11px 14px;border-radius:11px;font-size:14px}
+  .topbar{align-items:stretch;gap:9px}
+  .topbar>*{max-width:100%}
+  .topbar button{min-height:42px}
+  .acciones-recibo{display:grid;grid-template-columns:1fr;gap:8px}
+  .acciones-recibo button{width:100%}
+  .recibo-cabecera{flex-direction:column;align-items:flex-start;gap:10px}
+  .linea-recibo{gap:10px;align-items:flex-start;font-size:13px}
+  .linea-recibo span:first-child{flex:1}
+  .linea-recibo strong{text-align:right;max-width:58%;overflow-wrap:anywhere}
+  .total-recibo{font-size:18px}
+  .login-wrap{min-height:calc(100dvh - 35px);padding:16px 4px}
+  .login-card{width:100%;max-width:440px;padding:22px 18px!important;border-radius:18px}
+  .login-card h2{font-size:22px!important}
+  .marca{font-size:30px}
+  .tabla{margin-left:-2px;width:calc(100% + 4px)}
+  .tabla table{min-width:680px;font-size:12px}
+  .tabla th,.tabla td{padding:9px 8px;white-space:nowrap}
+  .ayuda{font-size:11px}
+  #toastZona{top:76px;left:10px;right:10px;width:auto}
+  .toast{padding:12px 13px;border-radius:12px}
+  /* Paneles y botones de acciones no deben desbordar */
+  .panel button,.panel input,.panel select,.panel textarea{max-width:100%}
+  .sidebar{width:min(86vw,320px)!important}
+  .sidebar-menu{overflow-y:auto}
+  .sidebar-menu button{min-height:46px}
+}
+@media(max-width:380px){
+  body.app-mode>main{padding-left:9px!important;padding-right:9px!important}
+  .metricas{gap:7px!important}
+  .tarjeta,.panel{padding:11px!important}
+  .numero{font-size:17px!important}
+  .mobile-menu-btn{left:10px!important}
+  body.app-mode>header{padding-left:58px!important}
+}
+@media(min-width:761px) and (max-width:1050px){
+  body.app-mode>main{padding:18px!important}
+  .metricas{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .formulario{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important}
+}
+
+
+/* Tarjetas de préstamos: resumen limpio y detalles desplegables */
+.prestamos-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.prestamo-card{background:#fff;border:1px solid #3F3F46;border-radius:15px;padding:16px;min-width:0;box-shadow:0 3px 12px #00000008;transition:box-shadow .2s,border-color .2s}
+.prestamo-card:hover{border-color:#A87912;box-shadow:0 7px 20px #00000010}
+.prestamo-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.prestamo-identidad{min-width:0}
+.prestamo-nombre{font-size:15px!important;line-height:1.35;margin:0 0 5px!important;color:#F4F4F5;overflow-wrap:anywhere}
+.prestamo-fecha{font-size:12px;color:#A1A1AA}
+.prestamo-estado{font-size:11px;font-weight:700;padding:5px 9px;border-radius:999px;white-space:nowrap;background:#422006;color:#D4A72C}
+.prestamo-estado.inactivo{background:#3F3F46;color:#D4D4D8}
+.prestamo-resumen{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px;padding:12px;background:#202024;border-radius:11px}
+.prestamo-resumen>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.prestamo-resumen span{font-size:11px;color:#A1A1AA}
+.prestamo-resumen strong{font-size:16px;color:#F4F4F5;overflow-wrap:anywhere}
+.prestamo-saldo strong{color:#D4A72C}
+.prestamo-vermas{margin-top:12px;width:100%;background:#3F3F46!important;color:#D4A72C!important;box-shadow:none!important;text-align:center;font-weight:700}
+.prestamo-vermas:hover{background:#52525B!important;transform:none}
+.prestamo-detalles{border-top:1px solid #3F3F46;margin-top:12px;padding-top:5px}
+.prestamo-detalle-fila{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 2px;border-bottom:1px solid #3F3F46;font-size:12px}
+.prestamo-detalle-fila span{color:#A1A1AA}
+.prestamo-detalle-fila strong{text-align:right;color:#E4E4E7;overflow-wrap:anywhere}
+.prestamo-vacio{padding:22px;text-align:center;color:#A1A1AA;background:#27272A;border:1px dashed #52525B;border-radius:13px}
+@media(max-width:760px){
+ .prestamos-cards{grid-template-columns:minmax(0,1fr);gap:10px}
+ .prestamo-card{padding:14px;border-radius:14px}
+ .prestamo-nombre{font-size:15px!important}
+ .prestamo-resumen{margin-top:12px;padding:11px}
+ .prestamo-resumen strong{font-size:15px}
+ .prestamo-vermas{min-height:43px}
+}
+
+
+.prestamo-card-acciones{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:11px}
+.prestamo-card-acciones button{width:100%;margin-top:0!important;min-width:0}
+.prestamo-abonar{background:#D4A72C!important;color:#fff!important;box-shadow:none!important;font-weight:700}
+.prestamo-abonar:hover{background:#A87912!important;transform:none}
+@media(max-width:760px){.prestamo-card-acciones{grid-template-columns:1fr 1fr;gap:7px}.prestamo-card-acciones button{font-size:13px;padding:10px 8px;min-height:43px}}
+@media(max-width:350px){.prestamo-card-acciones{grid-template-columns:1fr}}
+
+
+/* Historial reciente de abonos con tarjetas, adaptable a móvil */
+.abonos-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.abono-card{background:#fff;border:1px solid #3F3F46;border-radius:15px;padding:15px;min-width:0;box-shadow:0 3px 12px #00000008}
+.abono-card-head{display:flex;flex-direction:column;gap:4px;min-width:0}
+.abono-cliente{font-size:14px;font-weight:700;color:#F4F4F5;line-height:1.35;overflow-wrap:anywhere}
+.abono-fecha{font-size:12px;color:#A1A1AA}
+.abono-valor{margin-top:12px;padding:12px;background:#202024;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.abono-valor span{font-size:12px;color:#A1A1AA}
+.abono-valor strong{font-size:18px;color:#D4A72C;overflow-wrap:anywhere}
+.abono-vermas{margin-top:10px;width:100%;background:#3F3F46!important;color:#D4A72C!important;box-shadow:none!important;font-weight:700}
+.abono-detalles{border-top:1px solid #3F3F46;margin-top:10px;padding-top:3px}
+.abono-detalle-fila{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 2px;border-bottom:1px solid #3F3F46;font-size:12px}
+.abono-detalle-fila span{color:#A1A1AA}
+.abono-detalle-fila strong{text-align:right;color:#E4E4E7;overflow-wrap:anywhere}
+.abono-vacio{padding:20px;text-align:center;color:#A1A1AA;background:#27272A;border:1px dashed #52525B;border-radius:12px}
+@media(max-width:760px){.abonos-cards{grid-template-columns:minmax(0,1fr);gap:10px}.abono-card{padding:14px}.abono-valor strong{font-size:17px}}
+
+
+.prestamo-recibo-ver,.abono-recibo-ver{width:100%;margin-top:10px;background:#D4A72C!important;color:#fff!important;font-weight:700;box-shadow:none!important}
+.prestamo-recibo-ver:hover,.abono-recibo-ver:hover{background:#A87912!important}
+\n
+
+/* TEMA BLACK & GOLD - identidad visual premium */
+:root{--verde:#CA8A04;--fondo:#18181B;--borde:#52525B;color-scheme:dark}
+body{background:#18181B!important;color:#F4F4F5!important}
+body.app-mode>header{background:#18181B!important;color:#F9FAFB!important;border-bottom:1px solid #3F3F46}
+main{color:#F4F4F5}
+.tarjeta,.panel,.login-card,.prestamo-card,.abono-card{background:#27272A!important;color:#F4F4F5!important;border-color:#3F3F46!important;box-shadow:0 8px 24px #00000030!important}
+.metricas .tarjeta{background:linear-gradient(145deg,#303036,#242428)!important}
+h1,h2,h3,.prestamo-nombre,.numero,.prestamo-resumen strong{color:#FAFAFA!important}
+.metrica,.ayuda,.prestamo-fecha,.prestamo-resumen span,.prestamo-detalle-fila span,.abono-detalle-fila span,th{color:#A1A1AA!important}
+button{background:#CA8A04!important;color:#18181B!important;border:1px solid #D6A32A!important}
+button:hover:not(:disabled){background:#EAB308!important;color:#18181B!important}
+button.secundario,.prestamo-vermas,.abono-vermas{background:#3F3F46!important;color:#F4F4F5!important;border-color:#52525B!important}
+input,select,textarea{background:#18181B!important;color:#F4F4F5!important;border:1px solid #52525B!important}
+input::placeholder,textarea::placeholder{color:#71717A!important}
+label{color:#E4E4E7!important}
+table{color:#F4F4F5!important}th,td{border-bottom-color:#3F3F46!important}
+.estado,.exito,#loginMensaje.exito{color:#86EFAC!important}
+.error,#loginMensaje.error{color:#FCA5A5!important}
+.total-recibo,.prestamo-saldo strong,.abono-valor strong{color:#FACC15!important}
+.recibo-logo,.marca,.brand-mark{background:#CA8A04!important;color:#18181B!important}
+.linea-recibo,.prestamo-detalle-fila,.abono-detalle-fila{border-bottom-color:#3F3F46!important}
+.linea-recibo span:first-child{color:#A1A1AA!important}
+.prestamo-estado.activo{background:#14532D!important;color:#BBF7D0!important}
+.prestamo-estado.pagado{background:#854D0E!important;color:#FEF3C7!important;border:1px solid #CA8A04}
+.prestamo-estado.inactivo{background:#3F3F46!important;color:#D4D4D8!important}
+.prestamo-resumen,.abono-valor{background:#18181B!important;border:1px solid #3F3F46}
+.prestamo-vacio,.abono-vacio{background:#27272A!important;color:#A1A1AA!important;border-color:#52525B!important}
+.sidebar{background:#202024!important;border-right:1px solid #3F3F46!important;box-shadow:5px 0 24px #00000040!important}
+.sidebar-brand{color:#FACC15!important;border-bottom-color:#3F3F46!important}
+.brand-mark{background:#CA8A04!important;color:#18181B!important}
+.sidebar-toggle{background:#3F3F46!important;color:#FACC15!important}
+.sidebar-menu button,.sidebar-refresh,.sidebar-user{color:#D4D4D8!important}
+.sidebar-menu button:hover,.sidebar-refresh:hover{background:#3F3F46!important;color:#FACC15!important}
+.sidebar-menu button.active{background:#422006!important;color:#FACC15!important;box-shadow:inset 3px 0 #EAB308!important}
+.nav-icon,.sidebar-menu button.active .nav-icon{color:#FACC15!important}
+.sidebar-bottom,.sidebar-brand{border-color:#3F3F46!important}
+.toast{background:#27272A!important;color:#F4F4F5!important;border-color:#52525B!important;border-left-color:#EAB308!important}
+.toast.error{border-left-color:#EF4444!important;color:#FCA5A5!important}
+#mensaje{color:#F4F4F5}
+@media print{ :root{color-scheme:light}body{background:#fff!important;color:#111!important}.panel,.tarjeta,.login-card{background:#fff!important;color:#111!important}h1,h2,h3,.numero{color:#111!important}.linea-recibo span:first-child{color:#444!important}.total-recibo{color:#111!important} }
+
+
+/* BLACK & GOLD REFINADO — sin tonos verdes */
+:root{--verde:#D4A72C;--fondo:#111113;--borde:#3F3F46;color-scheme:dark}
+body,body.app-mode{background:#111113!important;color:#F4F4F5!important}
+body>header,body.app-mode>header,header{background:#18181B!important;color:#FAFAFA!important;border-bottom:1px solid #3F3F46!important}
+main{background:transparent!important;color:#F4F4F5!important}
+.tarjeta,.panel,.login-card,.prestamo-card,.abono-card{background:#232326!important;color:#F4F4F5!important;border:1px solid #3F3F46!important;box-shadow:0 10px 28px #0008!important}
+.metricas .tarjeta{background:linear-gradient(145deg,#29292E,#202024)!important}
+h1,h2,h3,.prestamo-nombre,.numero,.prestamo-resumen strong{color:#FAFAFA!important}
+.metrica,.ayuda,.prestamo-fecha,.prestamo-resumen span,.prestamo-detalle-fila span,.abono-detalle-fila span,th,.linea-recibo span:first-child{color:#B4B4BC!important}
+button,.prestamo-recibo-ver,.abono-recibo-ver{background:#C49A36!important;color:#171717!important;border:1px solid #E0BC62!important}
+button:hover:not(:disabled){background:#E0BC62!important;color:#171717!important}
+button.secundario,.prestamo-vermas,.abono-vermas{background:#3A3A40!important;color:#F4F4F5!important;border-color:#52525B!important}
+input,select,textarea{background:#171719!important;color:#F4F4F5!important;border:1px solid #52525B!important}
+input::placeholder,textarea::placeholder{color:#85858E!important}
+label{color:#E4E4E7!important}
+table{color:#F4F4F5!important}th,td{border-bottom-color:#3F3F46!important}
+.estado,.exito,#loginMensaje.exito{color:#F0C96A!important}
+.error,#loginMensaje.error{color:#FCA5A5!important}
+.total-recibo,.prestamo-saldo strong,.abono-valor strong{color:#F0C96A!important}
+.recibo-logo,.marca,.brand-mark{background:#C49A36!important;color:#171717!important}
+.linea-recibo,.prestamo-detalle-fila,.abono-detalle-fila{border-bottom-color:#3F3F46!important}
+.prestamo-estado.activo{background:#34343A!important;color:#F0C96A!important;border:1px solid #8A6A25!important}
+.prestamo-estado.pagado{background:#5A4518!important;color:#FFE7A3!important;border:1px solid #C49A36!important}
+.prestamo-estado.inactivo{background:#3A3A40!important;color:#D4D4D8!important}
+.prestamo-resumen,.abono-valor{background:#18181B!important;border:1px solid #3F3F46!important}
+.prestamo-vacio,.abono-vacio{background:#232326!important;color:#B4B4BC!important;border-color:#52525B!important}
+.sidebar{background:#18181B!important;border-right:1px solid #3F3F46!important;box-shadow:5px 0 24px #0008!important}
+.sidebar-brand{color:#F0C96A!important;border-color:#3F3F46!important}
+.sidebar-toggle{background:#3A3A40!important;color:#F0C96A!important}
+.sidebar-menu button,.sidebar-refresh,.sidebar-user{color:#D4D4D8!important}
+.sidebar-menu button:hover,.sidebar-refresh:hover{background:#34343A!important;color:#F0C96A!important}
+.sidebar-menu button.active{background:#3B3018!important;color:#F0C96A!important;box-shadow:inset 3px 0 #D4A72C!important}
+.nav-icon,.sidebar-menu button.active .nav-icon{color:#F0C96A!important}
+.sidebar-bottom,.sidebar-brand{border-color:#3F3F46!important}
+.toast{background:#232326!important;color:#F4F4F5!important;border-color:#52525B!important;border-left-color:#D4A72C!important}
+.toast.error{border-left-color:#EF4444!important;color:#FCA5A5!important}
+#mensaje{color:#F4F4F5!important}
+@media print{ :root{color-scheme:light}body{background:#fff!important;color:#111!important}.panel,.tarjeta,.login-card{background:#fff!important;color:#111!important}h1,h2,h3,.numero{color:#111!important}.linea-recibo span:first-child{color:#444!important}.total-recibo{color:#111!important} }
+
+
+/* Ajuste final del menú lateral: conserva exactamente su distribución y medidas originales; solo cambia colores */
+.sidebar{background:#18181B!important;border-right:1px solid #3F3F46!important;box-shadow:5px 0 24px #00000055!important}
+.sidebar-brand{color:#F4F4F5!important;border-bottom-color:#3F3F46!important}
+.sidebar-toggle{background:#3F3F46!important;color:#D4A72C!important}
+.sidebar-menu button,.sidebar-refresh{background:transparent!important;color:#D4D4D8!important}
+.sidebar-menu button:hover,.sidebar-refresh:hover{background:#27272A!important;color:#FACC15!important}
+.sidebar-menu button.active{background:#3F3F46!important;color:#FACC15!important;box-shadow:inset 3px 0 #D4A72C!important}
+.nav-icon,.sidebar-menu button.active .nav-icon{color:#D4A72C!important}
+.sidebar-bottom{border-top-color:#3F3F46!important}
+.sidebar-refresh{background:#27272A!important;color:#D4D4D8!important}
+.sidebar-user{color:#E4E4E7!important}
+.user-avatar{background:#3F3F46!important;color:#FACC15!important}
+.mobile-menu-btn{background:#3F3F46!important;color:#FACC15!important}
+
+
+.cobros-dia-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cobro-dia-card{background:#202024;border:1px solid #52525B;border-radius:14px;padding:15px;min-width:0}
+.cobro-dia-card h3{margin:0 0 6px;color:#F4F4F5;font-size:15px}
+.cobro-dia-meta{font-size:12px;color:#A1A1AA;margin-bottom:12px}
+.cobro-dia-datos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cobro-dia-datos span{display:block;font-size:11px;color:#A1A1AA;margin-bottom:4px}
+.cobro-dia-datos strong{font-size:15px;color:#F4F4F5;overflow-wrap:anywhere}
+.cobro-dia-card button{width:100%}
+@media(max-width:760px){.cobros-dia-lista{grid-template-columns:1fr}}
+</style></head><body>
+<header><button id="mobileMenuBtn" class="mobile-menu-btn" type="button" onclick="alternarSidebar()" aria-label="Abrir menú" aria-expanded="false">☰</button><h1>Mi sistema de préstamos</h1><p>Control de clientes, préstamos y recaudos diarios</p></header>
+<main>
+<div id="toastZona" aria-live="polite" aria-atomic="false"></div>
+<section id="loginView" class="login-wrap"><form id="loginForm" class="login-card">
+<div class="marca">$</div><h2>Iniciar sesión</h2><p class="ayuda">Ingresa con el usuario y contraseña del administrador.</p>
+<div class="campo"><label for="usuario">Usuario</label><input id="usuario" name="usuario" autocomplete="username" required minlength="4"></div>
+<div class="campo"><label for="clave">Contraseña</label><input id="clave" name="clave" type="password" autocomplete="current-password" required></div>
+<div class="campo"><label class="checkline"><input id="recordar" type="checkbox"> Recordarme en este dispositivo e iniciar automáticamente durante la sesión válida</label></div>
+<button id="btnLogin" type="submit">Entrar al sistema</button><div id="loginMensaje" role="status"></div>
+<p class="ayuda">Por seguridad no se guarda la contraseña en el navegador. La opción “Recordarme” conserva un token temporal de sesión.</p>
+</form></section>
+<div id="appView" class="oculto">
+<div class="topbar"><p id="bienvenida"></p><button class="secundario" type="button" onclick="salir()">Cerrar sesión</button></div>
+<div id="mensaje" role="status"></div>
+<section class="metricas">
+<div class="tarjeta"><div class="metrica">Clientes registrados</div><div class="numero" id="mClientes">—</div></div><div class="tarjeta"><div class="metrica">Préstamos activos</div><div class="numero" id="mActivos">—</div></div><div class="tarjeta"><div class="metrica">Dinero en calle</div><div class="numero" id="mCartera">—</div></div><div class="tarjeta"><div class="metrica">Capital pendiente</div><div class="numero" id="mCapital">—</div></div><div class="tarjeta"><div class="metrica">Intereses pendientes</div><div class="numero" id="mInteres">—</div></div><div class="tarjeta"><div class="metrica">Dinero disponible en caja</div><div class="numero" id="mCaja">—</div></div><div class="tarjeta"><div class="metrica">Recaudo de hoy</div><div class="numero" id="mHoy">—</div></div>
+<p class="ayuda"></p></section>
+<nav id="sidebar" class="sidebar no-imprimir" aria-label="Menú principal">
+<div class="sidebar-brand"><span class="brand-mark">$</span><span class="sidebar-label">Mi sistema</span><button class="sidebar-toggle" type="button" onclick="alternarSidebar()" aria-label="Contraer menú" title="Contraer menú">☰</button></div>
+<div class="sidebar-menu">
+<button type="button" data-seccion="inicio" onclick="mostrar('inicio')" title="Resumen"><span class="nav-icon">⌂</span><span class="sidebar-label">Resumen</span></button>
+<button type="button" data-seccion="cobrosDiarios" onclick="mostrar('cobrosDiarios')" title="Cobros diarios"><span class="nav-icon">◷</span><span class="sidebar-label">Cobros diarios</span></button>
+<button type="button" data-seccion="cobrosSemanales" onclick="mostrar('cobrosSemanales')" title="Cobros semanales"><span class="nav-icon">▦</span><span class="sidebar-label">Cobros semanales</span></button>
+<button type="button" data-seccion="cobrosQuincenales" onclick="mostrar('cobrosQuincenales')" title="Cobros quincenales"><span class="nav-icon">◫</span><span class="sidebar-label">Cobros quincenales</span></button>
+<button type="button" data-seccion="cobrosMensuales" onclick="mostrar('cobrosMensuales')" title="Cobros mensuales"><span class="nav-icon">▤</span><span class="sidebar-label">Cobros mensuales</span></button>
+<button type="button" data-seccion="clientes" onclick="mostrar('clientes')" title="Nuevo cliente"><span class="nav-icon">♙</span><span class="sidebar-label">Nuevo cliente</span></button>
+<button type="button" data-seccion="caja" onclick="mostrar('caja')" title="Ingresar dinero a caja"><span class="nav-icon">$</span><span class="sidebar-label">Ingresar dinero a caja</span></button>
+<button type="button" data-seccion="prestamo" onclick="mostrar('prestamo')" title="Nuevo préstamo"><span class="nav-icon">↗</span><span class="sidebar-label">Nuevo préstamo</span></button>
+<button type="button" data-seccion="pago" onclick="mostrar('pago')" title="Registrar abono"><span class="nav-icon">↓</span><span class="sidebar-label">Registrar abono</span></button>
+<button type="button" data-seccion="egreso" onclick="mostrar('egreso')" title="Registrar egreso"><span class="nav-icon">↙</span><span class="sidebar-label">Registrar egreso</span></button>
+<button type="button" data-seccion="cierre" onclick="mostrar('cierre')" title="Cierre diario"><span class="nav-icon">▣</span><span class="sidebar-label">Cierre diario</span></button>
+<button type="button" data-seccion="historialGanancias" onclick="mostrar('historialGanancias')" title="Historial mensual"><span class="nav-icon">▥</span><span class="sidebar-label">Historial mensual</span></button>
+<button type="button" data-seccion="editarCliente" onclick="mostrar('editarCliente')" title="Lista de clientes"><span class="nav-icon">♙</span><span class="sidebar-label">Lista de clientes</span></button>
+</div>
+<div class="sidebar-bottom"><button type="button" class="sidebar-refresh" onclick="cargar()" title="Actualizar datos"><span class="nav-icon">⟳</span><span class="sidebar-label">Actualizar datos</span></button><div class="sidebar-user"><span class="user-avatar">●</span><span class="sidebar-label" id="sidebarUsuario">Administrador</span></div></div>
+</nav>
+<div id="sidebarBackdrop" class="sidebar-backdrop" onclick="cerrarSidebar()" aria-hidden="true"></div>
+<section id="inicio" class="panel"><h2>Préstamos registrados</h2><div class="campo" style="margin-bottom:12px"><label for="buscarPrestamo">Buscar cliente o préstamo</label><input id="buscarPrestamo" placeholder="Nombre o código del préstamo" oninput="filtrarPrestamos()"></div><div id="listaPrestamos" class="prestamos-cards" aria-live="polite"></div><h2 style="margin-top:24px">Últimos abonos</h2><div id="listaUltimosAbonos" class="abonos-cards" aria-live="polite"></div></section>
+<section id="cobrosDiarios" class="panel oculto"><div class="topbar"><div><h2>Cobros diarios</h2><p class="ayuda">Clientes con vencimiento diario.</p></div><button type="button" class="secundario" onclick="cargar()">Actualizar</button></div><div id="listaCobrosDiarios" class="cobros-dia-lista" aria-live="polite"></div></section>
+<section id="cobrosSemanales" class="panel oculto"><div class="topbar"><div><h2>Cobros semanales</h2><p class="ayuda">Clientes con vencimiento cada 7 días.</p></div><button type="button" class="secundario" onclick="cargar()">Actualizar</button></div><div id="listaCobrosSemanales" class="cobros-dia-lista" aria-live="polite"></div></section>
+<section id="cobrosQuincenales" class="panel oculto"><div class="topbar"><div><h2>Cobros quincenales</h2><p class="ayuda">Clientes con vencimiento cada 15 días.</p></div><button type="button" class="secundario" onclick="cargar()">Actualizar</button></div><div id="listaCobrosQuincenales" class="cobros-dia-lista" aria-live="polite"></div></section>
+<section id="cobrosMensuales" class="panel oculto"><div class="topbar"><div><h2>Cobros mensuales</h2><p class="ayuda">Clientes con vencimiento mensual. Los intereses se siguen calculando mensualmente.</p></div><button type="button" class="secundario" onclick="cargar()">Actualizar</button></div><div id="listaCobrosMensuales" class="cobros-dia-lista" aria-live="polite"></div></section>
+<section id="clientes" class="panel oculto"><h2>Registrar cliente</h2><form id="formCliente" class="formulario"><div class="campo"><label>Nombre completo *</label><input name="nombre" required maxlength="120"></div><div class="campo"><label>Teléfono WhatsApp</label><input name="telefono" type="tel" placeholder="Ej. 3001234567"></div><div class="campo"><label>Documento</label><input name="documento"></div><div class="campo"><label>Dirección</label><input name="direccion"></div><div class="campo ancho"><label>Notas</label><textarea name="notas"></textarea></div><div class="campo ancho"><button type="submit">Guardar cliente</button></div></form></section>
+<section id="editarCliente" class="panel oculto"><h2>Lista de clientes</h2><div id="listaClientesCompleta" class="cobros-dia-lista" aria-live="polite"></div><h2 style="margin-top:24px">Editar cliente seleccionado</h2><div class="campo"><label>Selecciona el cliente</label><select id="editarClienteSelect" onchange="cargarClienteEdicion()"></select></div><form id="formEditarCliente" class="formulario"><input type="hidden" name="id"><div class="campo"><label>Nombre completo *</label><input name="nombre" required maxlength="120"></div><div class="campo"><label>Teléfono WhatsApp</label><input name="telefono" type="tel"></div><div class="campo"><label>Documento</label><input name="documento"></div><div class="campo"><label>Dirección</label><input name="direccion"></div><div class="campo ancho"><label>Notas</label><textarea name="notas"></textarea></div><div class="campo ancho"><button type="submit">Guardar cambios del cliente</button></div></form></section>
+<section id="caja" class="panel oculto"><h2>Ingresar dinero a caja</h2><p class="ayuda">Registra aquí el dinero con el que empiezas a trabajar (por ejemplo, $2.000.000) o dinero adicional que agregues después. Al crear préstamos, el capital entregado se descontará automáticamente de este saldo.</p><form id="formCaja" class="formulario"><div class="campo"><label>Fecha del ingreso *</label><input name="fecha" id="fechaCaja" type="date" required></div><div class="campo"><label>Dinero que ingresas (COP) *</label><input name="valor" type="number" min="1" step="1" placeholder="Ej. 2000000" required></div><div class="campo ancho"><label>Motivo</label><input name="motivo" placeholder="Ej. Capital inicial para prestar"></div><div class="campo ancho"><button type="submit">Guardar ingreso a caja</button></div></form><h2 style="margin-top:22px">Últimos ingresos a caja</h2><div class="tabla"><table><thead><tr><th>Fecha</th><th>Valor ingresado</th><th>Motivo</th></tr></thead><tbody id="tablaCaja"></tbody></table></div></section>
+<section id="egreso" class="panel oculto"><h2>Registrar egreso del negocio</h2><form id="formEgreso" class="formulario"><div class="campo"><label>Fecha *</label><input name="fecha" id="fechaEgreso" type="date" required></div><div class="campo"><label>Valor retirado (COP) *</label><input name="valor" type="number" min="1" step="1" required></div><div class="campo"><label>Motivo *</label><input name="motivo" required placeholder="Ej. gasto del negocio"></div><div class="campo ancho"><label>Observaciones</label><textarea name="observacion"></textarea></div><div class="campo ancho"><button type="submit">Guardar egreso</button></div></form><p class="ayuda">El egreso reduce el efectivo disponible, no la cartera que los clientes deben.</p></section>
+<section id="cierre" class="panel oculto"><h2>Cierre diario de caja</h2><div class="formulario"><div class="campo"><label>Fecha del cierre</label><input id="fechaCierre" type="date"></div><div class="campo" style="align-self:end"><button type="button" onclick="cargarCierre()">Consultar cierre</button></div></div><div id="detalleCierre" class="tarjeta" style="margin-top:14px">Selecciona una fecha y consulta el cierre.</div></section>
+<section id="historialGanancias" class="panel oculto"><h2>Historial mensual de ganancias</h2><p class="ayuda">La ganancia mostrada es el interés realmente cobrado en los abonos de cada mes. Los abonos que corresponden a capital no se cuentan como ganancia. El historial usa los movimientos guardados desde que empezaste a registrar operaciones en el sistema.</p><div class="acciones-recibo"><button type="button" onclick="cargarHistorialGanancias()">Actualizar historial</button></div><div class="tabla" style="margin-top:14px"><table><thead><tr><th>Mes</th><th>Intereses cobrados (ganancia)</th><th>Abonos recibidos</th><th>Capital recuperado</th><th>Préstamos entregados</th><th>Egresos</th><th>Flujo neto</th></tr></thead><tbody id="tablaHistorialGanancias"></tbody></table></div></section>
+<section id="prestamo" class="panel oculto"><h2>Crear préstamo</h2><form id="formPrestamo" class="formulario"><div class="campo"><label>Cliente *</label><select name="clienteId" id="clienteSelect" required></select></div><div class="campo"><label>Modalidad de pago *</label><select name="modalidadPago" required><option value="">Selecciona la modalidad</option><option value="Diario">Diario</option><option value="Semanal">Semanal</option><option value="Quincenal">Quincenal</option><option value="Mensual">Mensual</option></select></div><div class="campo"><label>Capital prestado (COP) *</label><input name="capital" type="number" min="1" step="1" placeholder="Ej. 400000" required></div><div class="campo"><label>Interés pactado (%) *</label><input name="tasa" type="number" min="0" step="0.01" value="20" required></div><div class="campo"><label>Fecha del préstamo *</label><input name="fechaInicio" id="fechaInicio" type="date" required></div><div class="campo"><label>Cuota por período de pago (COP)</label><input name="cuotaDiaria" type="number" min="0" step="1" value="0"></div><div class="campo ancho"><label>Notas</label><textarea name="notas"></textarea></div><div class="campo ancho"><p class="ayuda">El interés pactado se cobra una sola vez desde el día siguiente al préstamo y se calcula sobre el capital original. Ejemplo: $100.000 al 20% = $120.000 por cobrar. Los abonos se descuentan del saldo total pendiente.</p><button type="submit">Crear préstamo y generar comprobante</button></div></form></section>
+<section id="pago" class="panel oculto"><h2>Registrar abono</h2><form id="formPago" class="formulario"><div class="campo ancho"><label>Préstamo activo *</label><select name="prestamoId" id="prestamoSelect" required></select></div><div class="campo"><label>Valor recibido (COP) *</label><input name="valor" type="number" min="1" step="1" required></div><div class="campo"><label>Fecha del pago *</label><input name="fecha" id="fechaPago" type="date" required></div><div class="campo ancho"><label>Observación</label><textarea name="observacion" placeholder="Ej. abono del día"></textarea></div><div class="campo ancho"><p class="ayuda">El interés pactado se agrega una sola vez desde el día siguiente al préstamo. Cada abono reduce el saldo total pendiente; primero cubre intereses pendientes y luego capital.</p><button type="submit">Registrar abono y generar recibo</button></div></form></section>
+<section id="recibo" class="panel oculto"><div class="recibo-cabecera"><div><h2 id="reciboTitulo">Comprobante</h2><p>Constancia de la operación registrada</p></div><div class="recibo-logo">$</div></div><hr><p id="reciboNumero"></p><div id="reciboDetalle" class="detalle-recibo"></div><p class="ayuda">Conserva este comprobante como constancia del movimiento. No sustituye una factura fiscal cuando sea legalmente exigible.</p><div class="acciones-recibo no-imprimir"><button type="button" onclick="window.print()">Imprimir / Guardar PDF</button><button type="button" onclick="compartirWhatsApp()">Enviar por WhatsApp</button><button type="button" class="secundario" onclick="mostrar('inicio')">Volver al resumen</button></div></section>
+</div></main>
+<script>
+const COP=n=>'$'+Number(n||0).toLocaleString('es-CO',{maximumFractionDigits:2});
+let tokenSesion='',usuarioSesion='',comprobanteActual=null,prestamosCache=[];
+function notificar(t,err=false){if(!t)return;const zona=document.getElementById('toastZona');if(!zona)return;const item=document.createElement('div');item.className='toast'+(err?' error':'');const icon=document.createElement('span');icon.className='toast-icon';icon.textContent=err?'⚠':'✓';const texto=document.createElement('div');texto.className='toast-text';texto.textContent=t;item.append(icon,texto);zona.appendChild(item);while(zona.children.length>4)zona.firstElementChild.remove();setTimeout(()=>{item.classList.add('saliendo');setTimeout(()=>item.remove(),240);},4200);}
+function msgLogin(t,err=false){const e=document.getElementById('loginMensaje');e.textContent=t;e.className=err?'error':'exito';if(t&&err)notificar(t,true);}
+function mensaje(t,err=false){const e=document.getElementById('mensaje');e.textContent='';e.className=err?'error':'exito';if(t)notificar(t,err);}
+// URL de la API: reemplázala por la URL de implementación de tu Web App de Apps Script.
+const API_URL = 'PEGA_AQUI_LA_URL_DE_TU_WEB_APP';
+async function apiRequest(nombre, token='', args=[]){
+  if(!API_URL || API_URL.includes('PEGA_AQUI')) throw new Error('Falta configurar API_URL con la URL de tu Web App de Apps Script.');
+  let respuesta;
+  try {
+    respuesta = await fetch(API_URL, {
+      method:'POST',
+      mode:'cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:nombre,token:token||'',args:Array.isArray(args)?args:[]})
+    });
+  } catch(e) {
+    throw new Error('No se pudo conectar con Apps Script. Revisa la URL de la API, el despliegue y los permisos de acceso.');
+  }
+  let resultado;
+  try { resultado = await respuesta.json(); }
+  catch(e) { throw new Error('La API no devolvió JSON. Comprueba que la implementación de Apps Script esté activa y permita el acceso.'); }
+  if(!respuesta.ok || !resultado.ok) throw new Error(resultado.error || ('Error de API: '+respuesta.status));
+  return resultado.data;
+}
+function rpc(nombre,...args){return apiRequest(nombre,tokenSesion,args);} 
+function mostrarApp(usuario){document.body.classList.add('app-mode');document.getElementById('sidebarUsuario').textContent=usuario;document.getElementById('loginView').classList.add('oculto');document.getElementById('appView').classList.remove('oculto');document.getElementById('bienvenida').textContent='Sesión iniciada como '+usuario;cargar();}
+function entrar(usuario,clave,recordar){
+  const b=document.getElementById('btnLogin');b.disabled=true;b.dataset.originalText=b.dataset.originalText||b.textContent;b.textContent='Verificando…';msgLogin('Verificando credenciales…');
+  apiRequest('iniciarSesion','',[usuario,clave]).then(r=>{tokenSesion=r.token;usuarioSesion=r.usuario;if(recordar){localStorage.setItem('prestamos_token',tokenSesion);localStorage.setItem('prestamos_usuario',usuarioSesion);}else{sessionStorage.setItem('prestamos_token',tokenSesion);sessionStorage.setItem('prestamos_usuario',usuarioSesion);}msgLogin('');mostrarApp(usuarioSesion);document.getElementById('clave').value='';}).catch(e=>{msgLogin(e.message||String(e),true);}).finally(()=>{b.disabled=false;b.textContent=b.dataset.originalText||'Entrar al sistema';});
+}
+function intentarSesionGuardada(){
+  const t=localStorage.getItem('prestamos_token')||sessionStorage.getItem('prestamos_token');
+  const u=localStorage.getItem('prestamos_usuario')||sessionStorage.getItem('prestamos_usuario');
+  if(!t)return;
+  tokenSesion=t;usuarioSesion=u||'Administrador';
+  apiRequest('validarSesion',tokenSesion,[]).then(r=>{if(r&&r.ok)mostrarApp(usuarioSesion);else limpiarSesion();}).catch(()=>limpiarSesion());
+}
+function limpiarSesion(){document.body.classList.remove('app-mode','sidebar-collapsed','mobile-sidebar-open');tokenSesion='';usuarioSesion='';localStorage.removeItem('prestamos_token');localStorage.removeItem('prestamos_usuario');sessionStorage.removeItem('prestamos_token');sessionStorage.removeItem('prestamos_usuario');document.getElementById('appView').classList.add('oculto');document.getElementById('loginView').classList.remove('oculto');}
+function salir(){if(tokenSesion)apiRequest('cerrarSesion',tokenSesion,[]).catch(()=>{});limpiarSesion();msgLogin('Has cerrado sesión.');}
+document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();entrar(document.getElementById('usuario').value.trim(),document.getElementById('clave').value,document.getElementById('recordar').checked);});
+function mostrar(id){['inicio','cobrosDiarios','cobrosSemanales','cobrosQuincenales','cobrosMensuales','clientes','editarCliente','caja','egreso','cierre','historialGanancias','prestamo','pago','recibo'].forEach(x=>document.getElementById(x).classList.toggle('oculto',x!==id));document.querySelectorAll('#sidebar [data-seccion]').forEach(b=>b.classList.toggle('active',b.dataset.seccion===id));if(id==='prestamo'||id==='pago')cargarSelectores();if(id==='editarCliente')cargarClientesEdicion();if(id==='caja')cargarMovimientosCaja();if(id==='cierre')cargarCierre();if(id==='historialGanancias')cargarHistorialGanancias();if(window.innerWidth<=760)cerrarSidebar();}
+function alternarSidebar(){if(window.innerWidth<=760){document.body.classList.toggle('mobile-sidebar-open');const abierto=document.body.classList.contains('mobile-sidebar-open');const btn=document.getElementById('mobileMenuBtn');if(btn){btn.setAttribute('aria-expanded',String(abierto));btn.setAttribute('aria-label',abierto?'Cerrar menú':'Abrir menú');btn.textContent=abierto?'×':'☰';}}else{document.body.classList.toggle('sidebar-collapsed');}}
+function cerrarSidebar(){document.body.classList.remove('mobile-sidebar-open');const btn=document.getElementById('mobileMenuBtn');if(btn){btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Abrir menú');btn.textContent='☰';}}
+function llenarSelect(select,opciones,placeholder,labelFn){select.replaceChildren();const base=document.createElement('option');base.value='';base.textContent=placeholder;select.appendChild(base);opciones.forEach(o=>{const opt=document.createElement('option');opt.value=o.id;opt.textContent=labelFn(o);select.appendChild(opt);});}
+let clientesCacheRecibos=[];
+async function cargarSelectores(){try{const cs=await rpc('listarClientes');clientesCacheRecibos=Array.isArray(cs)?cs:[];llenarSelect(document.getElementById('clienteSelect'),cs,'Selecciona un cliente',c=>c.nombre+' · Doc: '+(c.documento||'No registrado')+(c.telefono?' · Tel: '+c.telefono:''));const ps=await rpc('listarPrestamos');const selectorPago=document.getElementById('prestamoSelect');const seleccionDeseada=prestamoPagoSeleccionado||selectorPago.value;llenarSelect(selectorPago,ps.filter(p=>p.estado==='Activo'),'Selecciona un préstamo',p=>p.cliente+' · '+p.id+' · Saldo '+COP(p.saldoTotal));if(seleccionDeseada && Array.from(selectorPago.options).some(o=>o.value===String(seleccionDeseada))){selectorPago.value=String(seleccionDeseada);prestamoPagoSeleccionado=selectorPago.value;}else if(!prestamoPagoSeleccionado){selectorPago.value='';}}catch(e){mensaje(e.message,true);if(e.message.includes('sesión'))limpiarSesion();}}
+function celda(tr,v,clase){const td=document.createElement('td');td.textContent=String(v??'');if(clase)td.className=clase;tr.appendChild(td);return td;}
+function fechaBonita(iso){if(!iso)return '—';const p=String(iso).split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:iso;}
+function filtrarPrestamos(){
+const q=document.getElementById('buscarPrestamo').value.toLowerCase().trim();
+const cont=document.getElementById('listaPrestamos');cont.replaceChildren();
+const lista=prestamosCache.filter(p=>(p.cliente+' '+p.id+' '+p.estado).toLowerCase().includes(q));
+if(!lista.length){const vacio=document.createElement('div');vacio.className='prestamo-vacio';vacio.textContent=q?'No se encontraron préstamos con esa búsqueda.':'Todavía no hay préstamos registrados.';cont.appendChild(vacio);return;}
+lista.forEach(p=>{
+ const card=document.createElement('article');card.className='prestamo-card';
+ const top=document.createElement('div');top.className='prestamo-card-top';
+ const ident=document.createElement('div');ident.className='prestamo-identidad';
+ const nombre=document.createElement('h3');nombre.className='prestamo-nombre';nombre.textContent=p.cliente||'Cliente sin nombre';
+ const fecha=document.createElement('div');fecha.className='prestamo-fecha';fecha.textContent='Préstamo · '+fechaBonita(p.fechaInicio);
+ ident.append(nombre,fecha);
+ const estado=document.createElement('span');estado.className='prestamo-estado '+(String(p.estado).toLowerCase()==='activo'?'activo':'inactivo');estado.textContent=p.estado||'—';
+ top.append(ident,estado);
+ const resumen=document.createElement('div');resumen.className='prestamo-resumen';
+ const capital=document.createElement('div');capital.className='prestamo-capital';
+ const capLabel=document.createElement('span');capLabel.textContent='Monto prestado';
+ const capValue=document.createElement('strong');capValue.textContent=COP(p.capitalInicial ?? p.capitalPrestado ?? p.capitalPendiente);
+ capital.append(capLabel,capValue);
+ const saldo=document.createElement('div');saldo.className='prestamo-saldo';
+ const salLabel=document.createElement('span');salLabel.textContent='Saldo por cobrar';
+ const salValue=document.createElement('strong');salValue.textContent=COP(p.saldoTotal);
+ saldo.append(salLabel,salValue);resumen.append(capital,saldo);
+ const acciones=document.createElement('div');acciones.className='prestamo-card-acciones';
+ const abonar=document.createElement('button');abonar.type='button';abonar.className='prestamo-abonar';abonar.textContent='＋ Registrar abono';abonar.addEventListener('click',()=>abrirAbonoDesdeTarjeta(p.id));
+ const btn=document.createElement('button');btn.type='button';btn.className='prestamo-vermas';btn.setAttribute('aria-expanded','false');btn.textContent='Ver más detalles ＋';
+ const detalle=document.createElement('div');detalle.className='prestamo-detalles oculto';
+ const cantidadMesesPendientes = (p.mesesInteresPendientes || []).length;
+
+const filas = [
+  ['Código', p.id],
+  ['Capital pendiente', COP(p.capitalPendiente)],
+  ['Intereses pendientes', COP(p.interesPendiente)],
+  ['Tasa pactada', String(p.tasaMensual) + '%'],
+  ['Modalidad de pago', p.modalidadPago || 'Diario'],
+  [
+    'Meses pendientes por cancelar',
+    cantidadMesesPendientes + (cantidadMesesPendientes === 1 ? ' mes' : ' meses')
+  ]
+];
+ filas.forEach(([k,v])=>{const fila=document.createElement('div');fila.className='prestamo-detalle-fila';const a=document.createElement('span');a.textContent=k;const b=document.createElement('strong');b.textContent=v??'—';fila.append(a,b);detalle.appendChild(fila);});
+ const reciboPrestamo=document.createElement('button');reciboPrestamo.type='button';reciboPrestamo.className='prestamo-recibo-ver';reciboPrestamo.textContent='Ver recibo nuevamente';reciboPrestamo.addEventListener('click',()=>mostrarReciboDesdeTarjetaPrestamo(p));detalle.appendChild(reciboPrestamo);
+ btn.addEventListener('click',()=>{const abierto=!detalle.classList.contains('oculto');detalle.classList.toggle('oculto',abierto);btn.setAttribute('aria-expanded',String(!abierto));btn.textContent=abierto?'Ver más detalles ＋':'Ver menos detalles −';});
+ acciones.append(abonar,btn);card.append(top,resumen,acciones,detalle);cont.appendChild(card);
+});
+}
+function renderCobrosDia(lista,contenedorId='listaCobrosDiarios'){
+ const cont=document.getElementById(contenedorId);if(!cont)return;cont.replaceChildren();
+ if(!Array.isArray(lista)||!lista.length){const vacio=document.createElement('div');vacio.className='prestamo-vacio';vacio.textContent='No hay cobros pendientes para este período.';cont.appendChild(vacio);return;}
+ lista.forEach(p=>{
+  const card=document.createElement('article');card.className='cobro-dia-card';
+  const nombre=document.createElement('h3');nombre.textContent=p.cliente||'Cliente sin nombre';
+  const meta=document.createElement('div');meta.className='cobro-dia-meta';meta.textContent='Préstamo '+p.id+' · '+(p.modalidadPago||'Diario')+' · Vence '+fechaBonita(p.fechaVencimiento||p.fechaInicio);
+  const datos=document.createElement('div');datos.className='cobro-dia-datos';
+  const cuota=document.createElement('div');const ql=document.createElement('span');ql.textContent=p.modalidadPago==='Mensual'?'Cuota mensual esperada':p.modalidadPago==='Quincenal'?'Cuota quincenal esperada':p.modalidadPago==='Semanal'?'Cuota semanal esperada':'Cuota diaria esperada';const qv=document.createElement('strong');qv.textContent=COP(p.cuotaDiaria||0);cuota.append(ql,qv);
+  const saldo=document.createElement('div');const sl=document.createElement('span');sl.textContent='Saldo pendiente';const sv=document.createElement('strong');sv.textContent=COP(p.saldoTotal||0);saldo.append(sl,sv);
+  const atraso=document.createElement('div');const al=document.createElement('span');al.textContent='Días sin pago';const av=document.createElement('strong');av.textContent=String(p.diasAtraso||0)+' día(s)';atraso.append(al,av);
+  datos.append(cuota,saldo,atraso);
+  const acciones=document.createElement('div');acciones.className='acciones-recibo';
+  const abonar=document.createElement('button');abonar.type='button';abonar.textContent='＋ Registrar abono';abonar.addEventListener('click',()=>abrirAbonoDesdeTarjeta(p.id));
+  const noPago=document.createElement('button');noPago.type='button';noPago.className='secundario';noPago.textContent='No pago';noPago.addEventListener('click',async()=>{if(!confirm('¿Marcar '+(p.cliente||'este cliente')+' como no pago para este período?'))return;try{const r=await rpc('registrarNoPago',p.id,p.fechaVencimiento);mensaje(r.mensaje+' Días de atraso: '+r.diasAtraso);await cargar();}catch(e){mensaje(e.message,true);}});
+  acciones.append(abonar,noPago);card.append(nombre,meta,datos,acciones);cont.appendChild(card);
+ });
+}
+let prestamoPagoSeleccionado='';
+function abrirAbonoDesdeTarjeta(prestamoId){
+ prestamoPagoSeleccionado=String(prestamoId);
+ mostrar('pago');
+ // La carga asíncrona conservará esta selección incluso si otro refresco vuelve a llenar el selector.
+}
+async function cargar(){try{const r=await rpc('obtenerResumen');document.getElementById('mClientes').textContent=r.clientes;document.getElementById('mActivos').textContent=r.prestamosActivos;document.getElementById('mCartera').textContent=COP(r.carteraTotal);document.getElementById('mCaja').textContent=COP(r.cajaDisponible);document.getElementById('mCapital').textContent=COP(r.capitalPendiente);document.getElementById('mInteres').textContent=COP(r.interesesPendientes);document.getElementById('mHoy').textContent=COP(r.cobradoHoy);prestamosCache=r.prestamos;filtrarPrestamos();renderCobrosDia(r.cobrosDiarios||r.cobrosDia||[],'listaCobrosDiarios');renderCobrosDia(r.cobrosSemanales||[],'listaCobrosSemanales');renderCobrosDia(r.cobrosQuincenales||[],'listaCobrosQuincenales');renderCobrosDia(r.cobrosMensuales||[],'listaCobrosMensuales');const ps=await rpc('obtenerPagos'),c=document.getElementById('listaUltimosAbonos');c.replaceChildren();ps.slice(0,10).forEach(p=>{const card=document.createElement('article');card.className='abono-card';const head=document.createElement('div');head.className='abono-card-head';const nombre=document.createElement('div');nombre.className='abono-cliente';nombre.textContent=p.cliente||'Cliente';const fecha=document.createElement('div');fecha.className='abono-fecha';fecha.textContent='Abono · '+(p.fecha||'—');head.append(nombre,fecha);const importe=document.createElement('div');importe.className='abono-valor';const lab=document.createElement('span');lab.textContent='Valor recibido';const val=document.createElement('strong');val.textContent=COP(p.valor);importe.append(lab,val);const detalles=document.createElement('div');detalles.className='abono-detalles oculto';[['Interés pagado',COP(p.interesPagado)],['Capital pagado',COP(p.capitalPagado)],['Número de recibo',p.id||'—']].forEach(([l,v])=>{const row=document.createElement('div');row.className='abono-detalle-fila';const a=document.createElement('span');a.textContent=l;const b=document.createElement('strong');b.textContent=v??'—';row.append(a,b);detalles.appendChild(row);});const toggle=document.createElement('button');toggle.type='button';toggle.className='abono-vermas';toggle.textContent='Ver más detalles ＋';toggle.setAttribute('aria-expanded','false');const reciboAbono=document.createElement('button');reciboAbono.type='button';reciboAbono.className='abono-recibo-ver';reciboAbono.textContent='Ver recibo nuevamente';reciboAbono.addEventListener('click',()=>mostrarReciboDesdeTarjetaAbono(p));detalles.appendChild(reciboAbono);toggle.addEventListener('click',()=>{const abierto=!detalles.classList.contains('oculto');detalles.classList.toggle('oculto',abierto);toggle.setAttribute('aria-expanded',String(!abierto));toggle.textContent=abierto?'Ver más detalles ＋':'Ver menos detalles −';});card.append(head,importe,toggle,detalles);c.appendChild(card);});if(!ps.length){const vacio=document.createElement('div');vacio.className='abono-vacio';vacio.textContent='Todavía no hay abonos registrados.';c.appendChild(vacio);}await cargarSelectores();}catch(e){mensaje(e.message,true);if(e.message.includes('sesión'))limpiarSesion();}}
+function datosFormulario(form){return Object.fromEntries(new FormData(form).entries());}
+function buscarDatosClienteRecibo(p){
+ const id=p.clienteId??p.clienteID??p.idCliente??p.IDCliente??'';
+ const cliente=clientesCacheRecibos.find(c=>String(c.id??c.ID??c.clienteId??c.ClienteID??'')===String(id));
+ return {
+  documento:cliente?.documento??cliente?.Documento??p.documento??p.Documento??'',
+  telefono:cliente?.telefono??cliente?.Telefono??p.telefono??p.Telefono??''
+ };
+}
+function mostrarReciboDesdeTarjetaPrestamo(p){
+ const contacto=buscarDatosClienteRecibo(p);
+ const capital=Number(p.capitalInicial??p.capitalPrestado??p.capitalPendiente??0);
+ const tasa=Number(p.tasaMensual??p.tasa??0);
+ const interes=Number(p.interesMensualEstimado??(capital*tasa/100));
+ mostrarRecibo({tipo:'PRESTAMO',id:p.id,fecha:p.fechaInicio||p.fecha||'—',cliente:p.cliente||'Cliente',documento:contacto.documento,telefono:contacto.telefono,capital,tasa,interesInicial:interes,interesMensualEstimado:interes,totalInicial:capital+interes});
+}
+function mostrarReciboDesdeTarjetaAbono(p){
+ const contacto=buscarDatosClienteRecibo(p);
+ mostrarRecibo({tipo:'ABONO',pagoId:p.pagoId||p.id,fecha:p.fecha||'—',cliente:p.cliente||'Cliente',documento:contacto.documento,telefono:contacto.telefono,idPrestamo:p.prestamoId||p.idPrestamo||'',valor:Number(p.valor||0),interesPagado:Number(p.interesPagado||0),capitalPagado:Number(p.capitalPagado||0),saldoCapital:Number(p.saldoCapital||0),interesPendiente:Number(p.interesPendiente||0),saldoTotal:Number(p.saldoTotal??((Number(p.saldoCapital||0)+Number(p.interesPendiente||0))))});
+}
+function mostrarRecibo(r){comprobanteActual=r;const es=r.tipo==='PRESTAMO';document.getElementById('reciboTitulo').textContent=es?'Comprobante de préstamo':'Comprobante de abono';document.getElementById('reciboNumero').textContent='Número: '+(es?r.id:r.pagoId)+' | Fecha: '+r.fecha;const d=es?[['Cliente',r.cliente],['Documento',r.documento||'No registrado'],['Teléfono',r.telefono||'No registrado'],['Capital entregado',COP(r.capital)],['Tasa pactada',r.tasa+'%'],['Interés del primer mes (anticipado)',COP(r.interesInicial??r.interesMensualEstimado)],['Deuda inicial total',COP(r.totalInicial??(r.capital+r.interesMensualEstimado))],['Interés que se agregará cada mes si sigue debiendo',COP(r.interesMensualEstimado)]]:[['Cliente',r.cliente],['Documento',r.documento||'No registrado'],['Teléfono',r.telefono||'No registrado'],['Préstamo',r.id],['Valor recibido',COP(r.valor)],['Aplicado a intereses',COP(r.interesPagado)],['Aplicado a capital',COP(r.capitalPagado)],['Capital pendiente',COP(r.saldoCapital)],['Intereses pendientes',COP(r.interesPendiente)],['Saldo total pendiente',COP(r.saldoTotal)]];const c=document.getElementById('reciboDetalle');c.replaceChildren();d.forEach(([k,v],i)=>{const row=document.createElement('div');row.className='linea-recibo';const a=document.createElement('span'),b=document.createElement('strong');a.textContent=k;b.textContent=String(v);if((es&&i===6)||(!es&&i===9))b.className='total-recibo';row.append(a,b);c.appendChild(row);});['inicio','cobrosDiarios','cobrosSemanales','cobrosQuincenales','cobrosMensuales','clientes','editarCliente','caja','egreso','cierre','historialGanancias','prestamo','pago'].forEach(x=>document.getElementById(x).classList.add('oculto'));document.getElementById('recibo').classList.remove('oculto');}
+function compartirWhatsApp(){
+  if(!comprobanteActual)return;
+  const r=comprobanteActual,es=r.tipo==='PRESTAMO';
+  let t='COMPROBANTE DE '+(es?'PRÉSTAMO':'ABONO')+'\nMi sistema de préstamos\nNúmero: '+(es?r.id:r.pagoId)+'\nFecha: '+r.fecha+'\nCliente: '+r.cliente+'\nDocumento: '+(r.documento||'No registrado')+'\nTeléfono: '+(r.telefono||'No registrado')+'\n';
+  if(es)t+='Capital entregado: '+COP(r.capital)+'\nTasa pactada: '+r.tasa+'%\nInterés mensual fijo: '+COP(r.interesMensualEstimado)+'\nTotal tras un mes sin abonos: '+COP(r.capital+r.interesMensualEstimado);
+  else t+='Valor recibido: '+COP(r.valor)+'\nIntereses pagados: '+COP(r.interesPagado)+'\nCapital abonado: '+COP(r.capitalPagado)+'\nCapital pendiente: '+COP(r.saldoCapital)+'\nIntereses pendientes: '+COP(r.interesPendiente)+'\nSaldo total pendiente: '+COP(r.saldoTotal);
+
+  // Formatos admitidos:
+  // Colombia local: 3105939059 -> 573105939059
+  // Internacional: +5215512345678, 005215512345678 o 5215512345678
+  const telefonoOriginal=String(r.telefono||'').trim();
+  const empiezaConMasO00=/^(\+|00)/.test(telefonoOriginal);
+  let num=telefonoOriginal.replace(/\D/g,'');
+  if(num.startsWith('00'))num=num.slice(2);
+  if(num.startsWith('57')){
+    // Ya incluye el indicativo de Colombia.
+  }else if(!empiezaConMasO00 && num.length===10){
+    // Número colombiano escrito sin indicativo.
+    num='57'+num;
+  }else if(!empiezaConMasO00 && num.length>=11 && num.length<=15){
+    // Se asume que ya incluye el indicativo internacional.
+  }
+  // WhatsApp requiere el número completo con indicativo, solo dígitos, entre 8 y 15 cifras.
+  if(num.length<8||num.length>15){
+    alert('El teléfono no parece estar en formato internacional. Para números de otros países, guarda el número con su indicativo, por ejemplo: +52 55 1234 5678. Para Colombia puedes seguir usando 3105939059.');
+    return;
+  }
+  const url='https://wa.me/'+num+'?text='+encodeURIComponent(t);
+  window.open(url,'_blank','noopener');
+}
+function enviarFormulario(id,funcion){const form=document.getElementById(id);form.addEventListener('submit',async e=>{e.preventDefault();const btn=form.querySelector('button[type="submit"]');const textoOriginal=btn.textContent;btn.disabled=true;btn.textContent='Guardando…';try{const r=await rpc(funcion,datosFormulario(form));mensaje(r.mensaje||'Guardado correctamente.');form.reset();if(id==='formPago')prestamoPagoSeleccionado='';if(r.tipo==='PRESTAMO'||r.tipo==='ABONO')mostrarRecibo(r);else mostrar('inicio');await cargar();}catch(err){mensaje(err.message||String(err),true);if((err.message||'').includes('sesión'))limpiarSesion();}finally{btn.disabled=false;btn.textContent=textoOriginal;}});}
+const now=new Date(),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');document.getElementById('fechaInicio').value=today;document.getElementById('fechaPago').value=today;enviarFormulario('formCliente','crearCliente');enviarFormulario('formPrestamo','crearPrestamo');enviarFormulario('formPago','registrarPago');document.getElementById('prestamoSelect').addEventListener('change',e=>{prestamoPagoSeleccionado=e.target.value||'';});enviarFormulario('formEgreso','registrarEgreso');enviarFormulario('formCaja','registrarIngresoCaja');enviarFormulario('formEditarCliente','editarCliente');
+async function cargarClientesEdicion(){try{const cs=await rpc('obtenerClientesDetalle');llenarSelect(document.getElementById('editarClienteSelect'),cs,'Selecciona un cliente',c=>c.nombre+' · '+(c.documento||'Sin documento'));renderListaClientesCompleta(cs);}catch(e){mensaje(e.message,true);}}
+function renderListaClientesCompleta(clientes){const cont=document.getElementById('listaClientesCompleta');if(!cont)return;cont.replaceChildren();if(!clientes.length){const vacio=document.createElement('p');vacio.textContent='Todavía no hay clientes registrados.';cont.appendChild(vacio);return;}clientes.forEach(c=>{const card=document.createElement('article');card.className='cobro-dia-card';const title=document.createElement('h3');title.textContent=c.nombre||'Cliente';const meta=document.createElement('div');meta.className='cobro-dia-meta';meta.textContent='Documento: '+(c.documento||'No registrado')+' · Teléfono: '+(c.telefono||'No registrado');const actions=document.createElement('div');actions.className='acciones-recibo';const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.addEventListener('click',()=>{document.getElementById('editarClienteSelect').value=c.id;cargarClienteEdicion();document.getElementById('formEditarCliente').scrollIntoView({behavior:'smooth',block:'start'});});const del=document.createElement('button');del.type='button';del.className='secundario';del.textContent='Eliminar';del.addEventListener('click',async()=>{if(!confirm('¿Eliminar a '+c.nombre+'? Solo se podrá eliminar si no tiene préstamos ni pagos asociados.'))return;try{const r=await rpc('eliminarCliente',c.id);mensaje(r.mensaje);await cargarClientesEdicion();await cargar();}catch(e){mensaje(e.message,true);}});actions.append(edit,del);card.append(title,meta,actions);cont.appendChild(card);});}
+
+async function cargarClienteEdicion(){const id=document.getElementById('editarClienteSelect').value;if(!id)return;try{const cs=await rpc('obtenerClientesDetalle'),c=cs.find(x=>x.id===id);if(!c)return;const f=document.getElementById('formEditarCliente');Object.keys(c).forEach(k=>{if(f.elements[k])f.elements[k].value=c[k]||'';});}catch(e){mensaje(e.message,true);}}
+async function cargarCierre(){
+  const fecha=document.getElementById('fechaCierre').value||today;
+  const cont=document.getElementById('detalleCierre');
+  const boton=document.querySelector('#cierre button[onclick="cargarCierre()"]');
+  document.getElementById('fechaCierre').value=fecha;
+  if(boton){boton.disabled=true;boton.textContent='Consultando…';}
+  cont.textContent='Consultando movimientos de la fecha seleccionada…';
+  try{
+    const r=await rpc('obtenerCierreDiario',fecha);
+    const filasCierre=[
+      ['Fecha',fechaBonita(r.fecha)],
+      ['Abonos recibidos',COP(r.totalAbonos)],
+      ['Préstamos entregados',COP(r.totalPrestamos)],
+      ['Egresos',COP(r.totalEgresos)],
+      ['Flujo neto del día',COP(r.flujoNeto)]
+    ];
+    cont.replaceChildren();
+    filasCierre.forEach(([etiqueta,valor],i)=>{
+      const fila=document.createElement('div');fila.className='linea-recibo';
+      const nombre=document.createElement('span'),importe=document.createElement('strong');
+      nombre.textContent=etiqueta;importe.textContent=valor;
+      if(i===filasCierre.length-1)importe.className='total-recibo';
+      fila.append(nombre,importe);cont.appendChild(fila);
+    });
+  }catch(e){
+    cont.textContent='No se pudo consultar el cierre: '+(e.message||String(e));
+    mensaje(e.message||String(e),true);
+    if((e.message||'').includes('sesión'))limpiarSesion();
+  }finally{
+    if(boton){boton.disabled=false;boton.textContent='Consultar cierre';}
+  }
+}
+async function cargarHistorialGanancias(){try{const datos=await rpc('obtenerHistorialGananciasMensual'),tb=document.getElementById('tablaHistorialGanancias');tb.replaceChildren();if(!datos.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=7;td.textContent='Todavía no hay movimientos registrados.';tr.appendChild(td);tb.appendChild(tr);return;}datos.forEach(m=>{const tr=document.createElement('tr');[m.nombreMes,COP(m.gananciaIntereses),COP(m.abonosRecibidos),COP(m.capitalRecuperado),COP(m.capitalPrestado),COP(m.egresos),COP(m.flujoNeto)].forEach(v=>celda(tr,v));tb.appendChild(tr);});}catch(e){mensaje(e.message||String(e),true);if((e.message||'').includes('sesión'))limpiarSesion();}}
+
+document.querySelector('#sidebar [data-seccion="inicio"]')?.classList.add('active');document.getElementById('fechaCierre').value=today;document.getElementById('fechaEgreso').value=today;document.getElementById('fechaCaja').value=today;intentarSesionGuardada();
+async function cargarMovimientosCaja(){try{const datos=await rpc('obtenerMovimientosCaja'),tb=document.getElementById('tablaCaja');tb.replaceChildren();datos.forEach(m=>{const tr=document.createElement('tr');[fechaBonita(m.fecha),COP(m.valor),m.motivo||'—'].forEach(v=>celda(tr,v));tb.appendChild(tr);});}catch(e){mensaje(e.message||String(e),true);if((e.message||'').includes('sesión'))limpiarSesion();}}
+</script></body></html>
