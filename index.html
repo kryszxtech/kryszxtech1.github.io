@@ -398,9 +398,9 @@ function notificar(t,err=false){if(!t)return;const zona=document.getElementById(
 function msgLogin(t,err=false){const e=document.getElementById('loginMensaje');e.textContent=t;e.className=err?'error':'exito';if(t&&err)notificar(t,true);}
 function mensaje(t,err=false){const e=document.getElementById('mensaje');e.textContent='';e.className=err?'error':'exito';if(t)notificar(t,err);}
 // URL de la API: reemplázala por la URL de implementación de tu Web App de Apps Script.
-const API_URL = 'PEGA_AQUI_LA_URL_DE_TU_WEB_APP';
+const API_URL = 'https://script.google.com/macros/s/AKfycby2YvZuJ8f20eP8_KHQaXzTKVw4X5zVhNTroaWCfYCrJEU7e57ftvSdIX3ff8FolqvV/exec';
 async function apiRequest(nombre, token='', args=[]){
-  if(!API_URL || API_URL.includes('PEGA_AQUI')) throw new Error('Falta configurar API_URL con la URL de tu Web App de Apps Script.');
+  if(!API_URL || API_URL.includes('https://script.google.com/macros/s/AKfycby2YvZuJ8f20eP8_KHQaXzTKVw4X5zVhNTroaWCfYCrJEU7e57ftvSdIX3ff8FolqvV/exec')) throw new Error('Falta configurar API_URL con la URL de tu Web App de Apps Script.');
   let respuesta;
   try {
     respuesta = await fetch(API_URL, {
